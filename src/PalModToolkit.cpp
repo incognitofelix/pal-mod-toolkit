@@ -41,7 +41,17 @@ namespace PMT
             // tool object) outlives every hotkey press because it lives in m_tools,
             // which lives as long as this mod instance.
             Tool* observer = tool.get();
-            register_keydown_event(observer->hotkey(), [observer]() { observer->on_activate(); });
+            const auto mods = observer->modifiers();
+
+            // mods[0] == 0 (MOD_KEY_START_OF_ENUM) means the tool wants no modifiers.
+            if (mods[0] != Input::ModifierKey::MOD_KEY_START_OF_ENUM)
+            {
+                register_keydown_event(observer->hotkey(), mods, [observer]() { observer->on_activate(); });
+            }
+            else
+            {
+                register_keydown_event(observer->hotkey(), [observer]() { observer->on_activate(); });
+            }
 
             Output::send<LogLevel::Verbose>(STR("[PalModToolkit]   - {}\n"), observer->name());
             m_tools.push_back(std::move(tool));

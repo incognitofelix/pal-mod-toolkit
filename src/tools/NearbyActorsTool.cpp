@@ -17,7 +17,12 @@ namespace PMT
 
     auto NearbyActorsTool::hotkey() const -> Input::Key
     {
-        return Input::Key::F3;
+        return Input::Key::F2;
+    }
+
+    auto NearbyActorsTool::modifiers() const -> Input::ModifierKeyArray
+    {
+        return { Input::ModifierKey::CONTROL };
     }
 
     auto NearbyActorsTool::on_activate() -> void

@@ -11,6 +11,7 @@ namespace PMT
     public:
         auto name() const -> RC::StringViewType override;
         auto hotkey() const -> RC::Input::Key override;
+        auto modifiers() const -> RC::Input::ModifierKeyArray override;
         auto on_activate() -> void override;
 
     private:

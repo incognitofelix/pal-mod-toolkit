@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Input/KeyDef.hpp>
+#include <Input/Handler.hpp>   // Input::Key, Input::ModifierKey, Input::ModifierKeyArray
 #include <String/StringType.hpp>
 
 namespace PMT
@@ -22,7 +22,11 @@ namespace PMT
         // The key that triggers this tool.
         virtual auto hotkey() const -> RC::Input::Key = 0;
 
-        // Runs each time the hotkey is pressed.
+        // Optional modifier keys (Ctrl/Shift/Alt) that must be held with the hotkey.
+        // Default: none. Override to require modifiers, e.g. { RC::Input::ModifierKey::CONTROL }.
+        virtual auto modifiers() const -> RC::Input::ModifierKeyArray { return {}; }
+
+        // Runs each time the hotkey (plus any modifiers) is pressed.
         virtual auto on_activate() -> void = 0;
     };
 }

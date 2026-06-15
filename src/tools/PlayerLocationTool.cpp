@@ -16,7 +16,13 @@ namespace PMT
 
     auto PlayerLocationTool::hotkey() const -> Input::Key
     {
-        return Input::Key::F2;
+        return Input::Key::F1;
+    }
+
+    auto PlayerLocationTool::modifiers() const -> Input::ModifierKeyArray
+    {
+        // Ctrl + F1 (F2 alone collides with the Building Restrictions mod).
+        return { Input::ModifierKey::CONTROL };
     }
 
     auto PlayerLocationTool::on_activate() -> void
