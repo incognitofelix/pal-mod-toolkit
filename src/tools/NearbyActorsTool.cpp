@@ -22,7 +22,8 @@ namespace PMT
 
     auto NearbyActorsTool::modifiers() const -> Input::ModifierKeyArray
     {
-        return { Input::ModifierKey::CONTROL };
+        // Shift + F2 (see PlayerLocationTool for why Shift over Ctrl/Alt).
+        return { Input::ModifierKey::SHIFT };
     }
 
     auto NearbyActorsTool::on_activate() -> void

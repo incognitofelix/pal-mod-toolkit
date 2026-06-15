@@ -21,8 +21,10 @@ namespace PMT
 
     auto PlayerLocationTool::modifiers() const -> Input::ModifierKeyArray
     {
-        // Ctrl + F1 (F2 alone collides with the Building Restrictions mod).
-        return { Input::ModifierKey::CONTROL };
+        // Shift + F1. Shift (sprint) only triggers together with WASD movement, so
+        // combined with an F-key it stays conflict-free; Ctrl (dodge) and Alt
+        // (Windows shortcuts) are both taken.
+        return { Input::ModifierKey::SHIFT };
     }
 
     auto PlayerLocationTool::on_activate() -> void
