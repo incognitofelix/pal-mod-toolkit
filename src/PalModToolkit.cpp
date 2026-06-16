@@ -2,6 +2,8 @@
 #include "core/Tool.hpp"
 #include "tools/PlayerLocationTool.hpp"
 #include "tools/NearbyActorsTool.hpp"
+#include "tools/BaseReconTool.hpp"
+#include "tools/WorkCaptureTool.hpp"
 
 #include <memory>
 #include <vector>
@@ -28,6 +30,8 @@ namespace PMT
             // ---- register tools here ----
             register_tool(std::make_unique<PlayerLocationTool>());
             register_tool(std::make_unique<NearbyActorsTool>());
+            register_tool(std::make_unique<BaseReconTool>());
+            register_tool(std::make_unique<WorkCaptureTool>());
             // -----------------------------
 
             Output::send<LogLevel::Verbose>(STR("[PalModToolkit] {} tool(s) ready.\n"), m_tools.size());

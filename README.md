@@ -10,8 +10,12 @@ information printed to the UE4SS console — handy while reverse-engineering the
 
 | Hotkey | Tool | What it does |
 |--------|------|--------------|
-| `F2` | Player Location | Prints the local player's world position (X/Y/Z, cm). |
-| `F3` | Nearby Actors | Lists every Actor within 50 m of the player (distance + class/path). Great for finding spawners, dungeons and map objects at a spot. |
+| `Shift+F1` | Player Location | Prints the local player's world position (X/Y/Z, cm). |
+| `Shift+F2` | Nearby Actors | Lists every Actor within 50 m of the player (distance + class/path). Great for finding spawners, dungeons and map objects at a spot. |
+| `Shift+F3` | Base Recon | Reflection-dumps base-camp / worker / work classes (properties + functions, walking the native super chain) to the UE4SS log, flagging keyword `HIT`s. For mapping the worker-assignment API. |
+| `Shift+F4` | Work Capture | Toggle. While armed, logs every worker/assignment-related function call (with parameter values) as it happens — e.g. while assigning a Pal — to reveal the native call chain. |
+
+> `Shift` is used as the modifier because Ctrl (dodge) and Alt (Windows shortcuts) are taken; Shift (sprint) only fires together with movement, so it stays conflict-free with the F-keys.
 
 ## Architecture
 
