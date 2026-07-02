@@ -4,13 +4,12 @@
 
 namespace PMT
 {
-    // Prints the local player's world position (X/Y/Z, in cm) to the console.
+    // "pmt loc" -- prints the local player's world position (X/Y/Z, in cm).
     class PlayerLocationTool final : public Tool
     {
     public:
-        auto name() const -> RC::StringViewType override;
-        auto hotkey() const -> RC::Input::Key override;
-        auto modifiers() const -> RC::Input::ModifierKeyArray override;
-        auto on_activate() -> void override;
+        auto command() const -> RC::StringViewType override;
+        auto help() const -> RC::StringViewType override;
+        auto execute(const std::vector<RC::StringType>& args, Out& out) -> void override;
     };
 }

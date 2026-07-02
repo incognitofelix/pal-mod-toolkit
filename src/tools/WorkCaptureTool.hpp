@@ -4,16 +4,14 @@
 
 namespace PMT
 {
-    // Live-capture tool: while armed (toggle with the hotkey), logs the first occurrence
-    // of every UFunction call whose name contains a worker/assignment keyword, together
-    // with its context class. Arm it, drop a Pal onto a building (or into the open), and
-    // the call chain reveals exactly which RPC performs the assignment.
+    // "pmt capture" -- toggle. While armed, logs the first occurrence of every UFunction
+    // call whose name contains a worker/assignment keyword, with parameter values, to
+    // reveal the native call chain. Arm it, perform the action, run "pmt capture" again.
     class WorkCaptureTool final : public Tool
     {
     public:
-        auto name() const -> RC::StringViewType override;
-        auto hotkey() const -> RC::Input::Key override;
-        auto modifiers() const -> RC::Input::ModifierKeyArray override;
-        auto on_activate() -> void override;
+        auto command() const -> RC::StringViewType override;
+        auto help() const -> RC::StringViewType override;
+        auto execute(const std::vector<RC::StringType>& args, Out& out) -> void override;
     };
 }

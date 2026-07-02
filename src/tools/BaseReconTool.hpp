@@ -4,16 +4,14 @@
 
 namespace PMT
 {
-    // Reconnaissance tool for the base-camp / worker-assignment systems.
-    // Step 1 (here): proves the wiring by anchoring on the player.
-    // Later steps: reflection-dump the BaseCamp/worker/inventory classes and hook the
-    // native "assign Pal to building" RPC to capture its parameters.
+    // "pmt recon [Class ...]" -- reflection-dumps the given classes (properties +
+    // functions, walking the native super chain) to the UE4SS log, flagging keyword
+    // HITs. A bare name is resolved as /Script/Pal.<Name>; pass a full path otherwise.
     class BaseReconTool final : public Tool
     {
     public:
-        auto name() const -> RC::StringViewType override;
-        auto hotkey() const -> RC::Input::Key override;
-        auto modifiers() const -> RC::Input::ModifierKeyArray override;
-        auto on_activate() -> void override;
+        auto command() const -> RC::StringViewType override;
+        auto help() const -> RC::StringViewType override;
+        auto execute(const std::vector<RC::StringType>& args, Out& out) -> void override;
     };
 }

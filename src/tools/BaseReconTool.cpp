@@ -1,5 +1,6 @@
 // Shared.hpp first: see the note in PlayerLocationTool.cpp.
 #include "Shared.hpp"
+#include "core/Console.hpp"
 #include "tools/BaseReconTool.hpp"
 
 #include <Unreal/UClass.hpp>
@@ -102,51 +103,47 @@ namespace PMT
         }
     }
 
-    auto BaseReconTool::name() const -> StringViewType
+    auto BaseReconTool::command() const -> StringViewType { return STR("recon"); }
+    auto BaseReconTool::help() const -> StringViewType
     {
-        return STR("Base Recon");
+        return STR("dump classes to the log: pmt recon <Name|/Script/Pkg.Class> ...");
     }
 
-    auto BaseReconTool::hotkey() const -> Input::Key
+    auto BaseReconTool::execute(const std::vector<StringType>& args, Out& out) -> void
     {
-        return Input::Key::F3;
-    }
-
-    auto BaseReconTool::modifiers() const -> Input::ModifierKeyArray
-    {
-        // Shift + F3, consistent with F1/F2 (see PlayerLocationTool).
-        return { Input::ModifierKey::SHIFT };
-    }
-
-    auto BaseReconTool::on_activate() -> void
-    {
-        Output::send<LogLevel::Warning>(STR("[Recon] === Base Recon: Dump START ===\n"));
-
-        // Seed classes: the player-side classes (proven anchor) plus two hopeful guesses for
-        // the base-camp class. The dump + HIT markers reveal how to navigate to the
-        // worker-assignment system; found names become seeds in the next step.
-        const std::array<const TCHAR*, 4> seeds = {
-            // Last lead: does the Pal's base-camp AI (or its worker module) expose a direct
-            // "force-assign to this WorkId/WorkProgressId" INPUT? If yes -> clean per-building
-            // assignment. If only the distance-based SetBaseCampActionWithFixAssign exists,
-            // assignment is inherently position-based.
-            STR("/Game/Pal/Blueprint/Controller/Monster/BP_MonsterAIController_BaseCamp.BP_MonsterAIController_BaseCamp_C"),
-            STR("/Script/Pal.PalActionBase"),
-            STR("/Script/Pal.PalMonsterAIControllerBase"),
-            STR("/Script/Pal.PalCharacterParameterComponent"),
-        };
-
-        for (const TCHAR* path : seeds)
+        // A bare name -> /Script/Pal.<Name>; a full path is kept as-is.
+        // No args -> a useful default (player + base-camp model).
+        std::vector<StringType> seeds;
+        if (args.empty())
         {
-            auto* cls = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, path);
+            seeds.push_back(STR("/Script/Pal.PalPlayerCharacter"));
+            seeds.push_back(STR("/Script/Pal.PalBaseCampModel"));
+        }
+        else
+        {
+            for (const auto& a : args)
+            {
+                seeds.push_back(a.find('/') != StringType::npos
+                                    ? a
+                                    : (StringType(STR("/Script/Pal.")) + a));
+            }
+        }
+
+        Output::send<LogLevel::Warning>(STR("[Recon] === dump START ===\n"));
+        int found = 0;
+        for (const auto& path : seeds)
+        {
+            auto* cls = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, path.c_str());
             if (!cls)
             {
                 Output::send<LogLevel::Warning>(STR("[Recon] [NOT FOUND] {}\n"), path);
                 continue;
             }
             walk(cls);
+            ++found;
         }
-
-        Output::send<LogLevel::Warning>(STR("[Recon] === Base Recon: dump END (search '*** HIT') ===\n"));
+        Output::send<LogLevel::Warning>(STR("[Recon] === dump END (search '*** HIT') ===\n"));
+        say(out, STR("recon: dumped {}/{} class(es) to UE4SS.log (search '*** HIT')"),
+            found, static_cast<int>(seeds.size()));
     }
 }

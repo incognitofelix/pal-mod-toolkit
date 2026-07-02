@@ -1,32 +1,42 @@
 #pragma once
 
-#include <Input/Handler.hpp>   // Input::Key, Input::ModifierKey, Input::ModifierKeyArray
 #include <String/StringType.hpp>
+#include <vector>
+
+namespace RC::Unreal { class FOutputDevice; class UObject; }
 
 namespace PMT
 {
+    // Context for one command invocation.
+    //  - console: in-game console output device (null for chat-driven commands).
+    //  - player:  the object that issued the command (console Executor or chat Context,
+    //             a controller/character/component). Resolved via current_player() so
+    //             position/distance commands use the RIGHT player in multiplayer/server.
+    struct Out
+    {
+        RC::Unreal::FOutputDevice* console = nullptr;
+        RC::Unreal::UObject* player = nullptr;
+    };
+
     // Abstract base class for every toolkit tool.
     //
-    // A "tool" is one self-contained feature, bound to a hotkey. To add a new tool:
-    //   1. Create a class that derives from Tool and implements the three methods below.
+    // A "tool" is one command, invoked as "pmt <command> [args]" either from the in-game
+    // console or from chat. To add a tool:
+    //   1. Create a class deriving from Tool and implement the three methods below.
     //   2. Register it once in PalModToolkit's constructor.
-    // The toolkit core takes care of wiring the hotkey to on_activate().
     class Tool
     {
     public:
         virtual ~Tool() = default;
 
-        // Human-readable name, shown in the load log.
-        virtual auto name() const -> RC::StringViewType = 0;
+        // The subcommand word, e.g. STR("loc") -> invoked as "pmt loc".
+        virtual auto command() const -> RC::StringViewType = 0;
 
-        // The key that triggers this tool.
-        virtual auto hotkey() const -> RC::Input::Key = 0;
+        // One-line usage shown by "pmt help".
+        virtual auto help() const -> RC::StringViewType = 0;
 
-        // Optional modifier keys (Ctrl/Shift/Alt) that must be held with the hotkey.
-        // Default: none. Override to require modifiers, e.g. { RC::Input::ModifierKey::CONTROL }.
-        virtual auto modifiers() const -> RC::Input::ModifierKeyArray { return {}; }
-
-        // Runs each time the hotkey (plus any modifiers) is pressed.
-        virtual auto on_activate() -> void = 0;
+        // Runs the tool. `args` are the tokens after the subcommand. Use the say() helper
+        // with `out` to write to the console (when present) and the log.
+        virtual auto execute(const std::vector<RC::StringType>& args, Out& out) -> void = 0;
     };
 }

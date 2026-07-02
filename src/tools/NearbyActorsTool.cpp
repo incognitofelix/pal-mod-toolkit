@@ -1,8 +1,11 @@
 // Shared.hpp first: see the note in PlayerLocationTool.cpp.
 #include "Shared.hpp"
+#include "core/Console.hpp"
+#include "core/Player.hpp"
 #include "tools/NearbyActorsTool.hpp"
 
 #include <vector>
+#include <string>
 #include <cmath>
 
 using namespace RC;
@@ -10,43 +13,31 @@ using namespace RC::Unreal;
 
 namespace PMT
 {
-    auto NearbyActorsTool::name() const -> StringViewType
+    auto NearbyActorsTool::command() const -> StringViewType { return STR("actors"); }
+    auto NearbyActorsTool::help() const -> StringViewType
     {
-        return STR("Nearby Actors");
+        return STR("list Actors within [meters] of the player (default 50). Details -> UE4SS.log");
     }
 
-    auto NearbyActorsTool::hotkey() const -> Input::Key
+    auto NearbyActorsTool::execute(const std::vector<StringType>& args, Out& out) -> void
     {
-        return Input::Key::F2;
-    }
-
-    auto NearbyActorsTool::modifiers() const -> Input::ModifierKeyArray
-    {
-        // Shift + F2 (see PlayerLocationTool for why Shift over Ctrl/Alt).
-        return { Input::ModifierKey::SHIFT };
-    }
-
-    auto NearbyActorsTool::on_activate() -> void
-    {
-        // 1) Anchor: the player's position.
-        auto* player = UObjectGlobals::FindFirstOf(STR("PalPlayerCharacter"));
-        if (!player)
+        double radius_cm = 5000.0; // 50 m default
+        if (!args.empty())
         {
-            Output::send<LogLevel::Error>(STR("[PalModToolkit] No PalPlayerCharacter found\n"));
-            return;
+            try { radius_cm = std::stod(args[0]) * 100.0; }
+            catch (...) { say(out, STR("bad radius '{}', using 50m"), args[0]); }
         }
-        const FVector origin = static_cast<AActor*>(player)->K2_GetActorLocation();
 
-        // 2) Every actor currently loaded.
+        auto* player = current_player(out);
+        if (!player) { say(out, STR("no player found")); return; }
+        const FVector origin = player->K2_GetActorLocation();
+
         std::vector<UObject*> actors;
         UObjectGlobals::FindAllOf(STR("Actor"), actors);
 
-        // 3) Log the ones inside the radius. We compare squared distances (no sqrt) for
-        //    speed, and only take the real sqrt for the few that actually match.
-        constexpr double radius_sq = s_radius_cm * s_radius_cm;
-
-        Output::send<LogLevel::Warning>(STR("[PalModToolkit] === Actors within {}m ===\n"),
-                                        s_radius_cm / 100.0);
+        const double radius_sq = radius_cm * radius_cm;
+        int n = 0;
+        Output::send<LogLevel::Warning>(STR("[pmt] === Actors within {}m ===\n"), radius_cm / 100.0);
         for (auto* obj : actors)
         {
             const FVector p = static_cast<AActor*>(obj)->K2_GetActorLocation();
@@ -54,13 +45,13 @@ namespace PMT
             const double dy = p.Y() - origin.Y();
             const double dz = p.Z() - origin.Z();
             const double dist_sq = dx * dx + dy * dy + dz * dz;
-
             if (dist_sq <= radius_sq)
             {
-                Output::send<LogLevel::Warning>(STR("[PalModToolkit]  {}m  {}\n"),
+                Output::send<LogLevel::Warning>(STR("[pmt]  {}m  {}\n"),
                                                 std::sqrt(dist_sq) / 100.0, obj->GetFullName());
+                ++n;
             }
         }
-        Output::send<LogLevel::Warning>(STR("[PalModToolkit] === end ===\n"));
+        say(out, STR("{} actor(s) within {}m (details in UE4SS.log)"), n, radius_cm / 100.0);
     }
 }

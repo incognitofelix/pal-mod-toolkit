@@ -4,9 +4,9 @@
 
 namespace PMT
 {
-    // "pmt actors [meters]" -- lists every Actor within a radius of the player
-    // (distance + full name/class). Default radius 50 m. Details go to UE4SS.log.
-    class NearbyActorsTool final : public Tool
+    // "pmt works" -- lists the base's work objects (PalWorkBase) near the player, with
+    // their world position. Foundation for assigning a Pal to a chosen building.
+    class ListWorksTool final : public Tool
     {
     public:
         auto command() const -> RC::StringViewType override;

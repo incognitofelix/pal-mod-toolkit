@@ -47,9 +47,13 @@ local UE4SS_FIRST_PARTY = {
 
 -- Third-party packages we need headers from (discovered by name, any version/hash).
 local UE4SS_PACKAGES = {
-    "i/imgui", "g/glfw", "i/imguitextedit", "i/iconfontcppheaders",
+    "g/glfw", "i/imguitextedit", "i/iconfontcppheaders",
     "g/glaze", "p/polyhook_2", "z/zydis", "z/zycore",
 }
+
+-- imgui is version- AND context-sensitive: our tab shares UE4SS's imgui context, so we
+-- must compile/link the SAME imgui version UE4SS uses (UE4SS/xmake.lua pins v1.92.1).
+local IMGUI_VERSION = "v1.92.1"
 
 -- fmt is version-sensitive: DynamicOutput uses fmt::buffered_context (fmt 11+). If an
 -- older fmt (e.g. 10.x left in the cache by another build) is on the include path,
@@ -94,10 +98,18 @@ target("PalModToolkit")
                 target:add("includedirs", inc)
             end
         end
-        -- imgui keeps some headers one level deeper.
-        for _, inc in ipairs(os.dirs(path.join(pkgroot, "i/imgui", "*", "*", "include/imgui"))) do
+        -- imgui: pinned to UE4SS's version, headers + the compiled static lib (so we can
+        -- call ImGui:: functions in our debug tab). Core ImGui ABI is version-defined.
+        for _, inc in ipairs(os.dirs(path.join(pkgroot, "i/imgui", IMGUI_VERSION, "*", "include"))) do
             target:add("includedirs", inc)
         end
+        for _, inc in ipairs(os.dirs(path.join(pkgroot, "i/imgui", IMGUI_VERSION, "*", "include/imgui"))) do
+            target:add("includedirs", inc)
+        end
+        for _, lib in ipairs(os.dirs(path.join(pkgroot, "i/imgui", IMGUI_VERSION, "*", "lib"))) do
+            target:add("linkdirs", lib)
+        end
+        target:add("links", "imgui")
 
         -- fmt: version-pinned headers + its compiled static lib (number formatting,
         -- which UE4SS.dll does not export).

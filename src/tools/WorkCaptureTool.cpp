@@ -1,5 +1,6 @@
 // Shared.hpp first: see the note in PlayerLocationTool.cpp.
 #include "Shared.hpp"
+#include "core/Console.hpp"
 #include "tools/WorkCaptureTool.hpp"
 
 #include <Unreal/Hooks.hpp>
@@ -109,22 +110,13 @@ namespace PMT
         }
     }
 
-    auto WorkCaptureTool::name() const -> StringViewType
+    auto WorkCaptureTool::command() const -> StringViewType { return STR("capture"); }
+    auto WorkCaptureTool::help() const -> StringViewType
     {
-        return STR("Work Capture");
+        return STR("toggle live capture of worker/assignment function calls (-> UE4SS.log)");
     }
 
-    auto WorkCaptureTool::hotkey() const -> Input::Key
-    {
-        return Input::Key::F4;
-    }
-
-    auto WorkCaptureTool::modifiers() const -> Input::ModifierKeyArray
-    {
-        return { Input::ModifierKey::SHIFT };
-    }
-
-    auto WorkCaptureTool::on_activate() -> void
+    auto WorkCaptureTool::execute(const std::vector<StringType>&, Out& out) -> void
     {
         if (!s_registered)
         {
@@ -137,11 +129,11 @@ namespace PMT
         if (s_active)
         {
             s_seen.clear();
-            Output::send<LogLevel::Warning>(STR("[Capture] === ARMED -- now drop a Pal ===\n"));
+            say(out, STR("capture ARMED -- now perform the action (e.g. drop a Pal)"));
         }
         else
         {
-            Output::send<LogLevel::Warning>(STR("[Capture] === STOP ===\n"));
+            say(out, STR("capture STOPPED (results in UE4SS.log)"));
         }
     }
 }

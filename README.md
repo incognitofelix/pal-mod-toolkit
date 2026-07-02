@@ -1,32 +1,50 @@
 # PalModToolkit
 
 A small **toolkit of in-game tools for Palworld modders**, built as a single
-[UE4SS](https://github.com/UE4SS-RE/RE-UE4SS) C++ mod. Press a hotkey, get
-information printed to the UE4SS console — handy while reverse-engineering the game.
+[UE4SS](https://github.com/UE4SS-RE/RE-UE4SS) C++ mod. It is **console-driven**: type
+`pmt <command>` and get information printed to the UE4SS log — handy while
+reverse-engineering the game.
 
 > Status: early. Built for Palworld + the Palworld-specific UE4SS (`experimental-palworld`).
 
-## Tools
+## Using it
 
-| Hotkey | Tool | What it does |
-|--------|------|--------------|
-| `Shift+F1` | Player Location | Prints the local player's world position (X/Y/Z, cm). |
-| `Shift+F2` | Nearby Actors | Lists every Actor within 50 m of the player (distance + class/path). Great for finding spawners, dungeons and map objects at a spot. |
-| `Shift+F3` | Base Recon | Reflection-dumps base-camp / worker / work classes (properties + functions, walking the native super chain) to the UE4SS log, flagging keyword `HIT`s. For mapping the worker-assignment API. |
-| `Shift+F4` | Work Capture | Toggle. While armed, logs every worker/assignment-related function call (with parameter values) as it happens — e.g. while assigning a Pal — to reveal the native call chain. |
+The toolkit adds a **`PalModToolkit` tab** to the UE4SS debug window (enabled via
+`GuiConsoleEnabled` in `UE4SS-settings.ini`). Open that window, select the tab, type a
+command into the input box and press Enter. Output appears in the UE4SS log.
 
-> `Shift` is used as the modifier because Ctrl (dodge) and Alt (Windows shortcuts) are taken; Shift (sprint) only fires together with movement, so it stays conflict-free with the F-keys.
+> It also listens on the native UE console (`UGameViewportClient::ProcessConsoleExec`)
+> and in-game chat where those are available, but the debug-window tab is the reliable
+> path (it works in single-player and is independent of the game UI).
+
+Type `pmt help` to list everything. Commands:
+
+| Command | What it does |
+|---------|--------------|
+| `pmt help` | List all commands. |
+| `pmt loc` | Print the issuing player's world position (X/Y/Z, cm). |
+| `pmt actors [meters]` | List every Actor within a radius (default 50 m) — distance + class/path. Details → UE4SS.log. |
+| `pmt recon <Name\|/Script/Pkg.Class> ...` | Reflection-dump the given classes (properties + functions, walking the native super chain) to the log, flagging keyword `HIT`s. A bare name resolves to `/Script/Pal.<Name>`. |
+| `pmt capture` | Toggle. While armed, logs every worker/assignment function call (with parameter values) — e.g. while assigning a Pal — to reveal the native call chain. |
+| `pmt works` | List the base's work objects near you with world positions. |
+| `pmt defaultpos` | Send every worker Pal to its default position (diagnostic). |
+| `pmt assign` | Teleport the first base Pal to you and fix-assign it (the native "V-drop" backend). |
+
+Position/distance commands resolve **the player who issued the command** (console
+executor / chat sender), so they work correctly in multiplayer and on a server.
 
 ## Architecture
 
 One DLL, internally modular. The core (`src/PalModToolkit.cpp`) owns a list of
-**tools**; each tool is a small self-contained class deriving from `PMT::Tool`
-(`src/core/Tool.hpp`). The core wires each tool's hotkey to its `on_activate()`.
+**tools**; each tool is a small class deriving from `PMT::Tool` (`src/core/Tool.hpp`)
+with `command()`, `help()` and `execute(args, out)`. The core parses a typed line and
+dispatches to the matching tool. Input typed in the debug-window tab is captured on the
+GUI thread and executed on the game thread (`on_update`) for safety.
 
 **Add a new tool** in three steps:
 
 1. Create `src/tools/MyTool.hpp` + `.cpp` deriving from `PMT::Tool` and implement
-   `name()`, `hotkey()`, `on_activate()`.
+   `command()`, `help()`, `execute()`.
 2. `#include "tools/MyTool.hpp"` in `src/PalModToolkit.cpp`.
 3. Add `register_tool(std::make_unique<MyTool>());` in the constructor.
 

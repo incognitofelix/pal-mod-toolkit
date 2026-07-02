@@ -4,9 +4,9 @@
 
 namespace PMT
 {
-    // "pmt actors [meters]" -- lists every Actor within a radius of the player
-    // (distance + full name/class). Default radius 50 m. Details go to UE4SS.log.
-    class NearbyActorsTool final : public Tool
+    // "pmt defaultpos" -- behavioural probe: calls SetDefaultPositionAction() on every
+    // worker Pal's controller (they walk to their default spot). Temporary diagnostic.
+    class BaseActionTestTool final : public Tool
     {
     public:
         auto command() const -> RC::StringViewType override;
