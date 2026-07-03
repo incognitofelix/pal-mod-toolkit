@@ -52,8 +52,11 @@ local UE4SS_PACKAGES = {
 }
 
 -- imgui is version- AND context-sensitive: our tab shares UE4SS's imgui context, so we
--- must compile/link the SAME imgui version UE4SS uses (UE4SS/xmake.lua pins v1.92.1).
-local IMGUI_VERSION = "v1.92.1"
+-- must compile/link the SAME imgui version UE4SS uses. UE4SS/xmake.lua in THIS checkout
+-- (tag experimental-palworld, commit c62ada0) pins v1.89, not v1.92.1 -- verified directly
+-- against the local RE-UE4SS source tree, since a mismatch here means two different
+-- ImGuiContext struct layouts sharing one context pointer (memory corruption risk).
+local IMGUI_VERSION = "v1.89"
 
 -- fmt is version-sensitive: DynamicOutput uses fmt::buffered_context (fmt 11+). If an
 -- older fmt (e.g. 10.x left in the cache by another build) is on the include path,
@@ -91,7 +94,10 @@ target("PalModToolkit")
             target:add("includedirs", path.join(src, d))
         end
 
-        local pkgroot = path.join(os.getenv("LOCALAPPDATA"), ".xmake", "packages")
+        -- xmake's package cache lives under its own global profile dir regardless of
+        -- target platform (~/.xmake on Linux/macOS, %LOCALAPPDATA%\.xmake on Windows) --
+        -- LOCALAPPDATA doesn't exist when cross-compiling from a Linux host.
+        local pkgroot = path.join(import("core.base.global").directory(), "packages")
         for _, name in ipairs(UE4SS_PACKAGES) do
             -- structure: <pkgroot>/<letter>/<name>/<version>/<hash>/include
             for _, inc in ipairs(os.dirs(path.join(pkgroot, name, "*", "*", "include"))) do
