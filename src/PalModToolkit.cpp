@@ -9,12 +9,13 @@
 #include "tools/AssignTestTool.hpp"
 #include "tools/ListWorksTool.hpp"
 #include "tools/RaidTool.hpp"
+#include "tools/SanityCheckTool.hpp"
 
 #include <Unreal/Hooks.hpp>
 #include <Unreal/UFunction.hpp>
 #include <Unreal/FProperty.hpp>
 #include <Unreal/UnrealFlags.hpp>
-#include <Unreal/Core/Containers/FString.hpp>
+#include <Unreal/FString.hpp> // this UE4SS checkout keeps it directly under Unreal/, not Unreal/Core/Containers/
 #include <Unreal/FText.hpp>
 
 #include <UE4SSProgram.hpp>
@@ -53,6 +54,7 @@ namespace PMT
             register_tool(std::make_unique<BaseActionTestTool>());
             register_tool(std::make_unique<AssignTestTool>());
             register_tool(std::make_unique<RaidTool>());
+            register_tool(std::make_unique<SanityCheckTool>());
             // -----------------------------
 
             Output::send<LogLevel::Verbose>(STR("[PalModToolkit] {} command(s) ready. Type 'pmt help' in the console.\n"),

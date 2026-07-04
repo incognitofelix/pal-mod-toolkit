@@ -1,6 +1,7 @@
 // Shared.hpp first: see the note in PlayerLocationTool.cpp.
 #include "Shared.hpp"
 #include "core/Console.hpp"
+#include "core/KnownIdentifiers.hpp"
 #include "tools/BaseReconTool.hpp"
 
 #include <Unreal/UClass.hpp>
@@ -116,8 +117,8 @@ namespace PMT
         std::vector<StringType> seeds;
         if (args.empty())
         {
-            seeds.push_back(STR("/Script/Pal.PalPlayerCharacter"));
-            seeds.push_back(STR("/Script/Pal.PalBaseCampModel"));
+            seeds.push_back(Identifiers::Path_PalPlayerCharacter);
+            seeds.push_back(Identifiers::Path_PalBaseCampModel);
         }
         else
         {
@@ -125,7 +126,7 @@ namespace PMT
             {
                 seeds.push_back(a.find('/') != StringType::npos
                                     ? a
-                                    : (StringType(STR("/Script/Pal.")) + a));
+                                    : (StringType(Identifiers::Path_ScriptPalPrefix) + a));
             }
         }
 

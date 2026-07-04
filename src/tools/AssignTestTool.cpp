@@ -1,6 +1,7 @@
 // Shared.hpp first: see the note in PlayerLocationTool.cpp.
 #include "Shared.hpp"
 #include "core/Console.hpp"
+#include "core/KnownIdentifiers.hpp"
 #include "core/Player.hpp"
 #include "tools/AssignTestTool.hpp"
 
@@ -59,12 +60,12 @@ namespace PMT
         // BP_MonsterAIController_BaseCamp_C::SetBaseCampActionWithFixAssign(distance)
         auto call_fix_assign(UObject* controller, float distance) -> void
         {
-            auto* fn = controller->GetFunctionByNameInChain(STR("SetBaseCampActionWithFixAssign"));
+            auto* fn = controller->GetFunctionByNameInChain(Identifiers::Fn_SetBaseCampActionWithFixAssign);
             if (!fn) { return; }
             std::vector<uint8_t> frame(static_cast<size_t>(fn->GetStructureSize()), 0);
             for (FProperty* p : fn->ForEachProperty())
             {
-                if (p->GetName() == STR("DistanceFixAssignTargetting"))
+                if (p->GetName() == Identifiers::Param_DistanceFixAssign)
                 {
                     *reinterpret_cast<float*>(frame.data() + p->GetOffset_Internal()) = distance;
                 }
@@ -84,18 +85,18 @@ namespace PMT
     auto AssignTestTool::execute(const std::vector<StringType>&, Out& out) -> void
     {
         std::vector<UObject*> controllers;
-        UObjectGlobals::FindAllOf(STR("BP_MonsterAIController_BaseCamp_C"), controllers);
+        UObjectGlobals::FindAllOf(Identifiers::BP_MonsterAIController_BaseCamp, controllers);
         if (controllers.empty()) { say(out, STR("no base-camp controllers")); return; }
         auto* ctrl = controllers[0];
 
-        auto* pawn = call_object_getter(ctrl, STR("K2_GetPawn"));
+        auto* pawn = call_object_getter(ctrl, Identifiers::Fn_K2GetPawn);
         if (!pawn) { say(out, STR("no pawn")); return; }
-        auto* param = call_object_getter(pawn, STR("GetCharacterParameterComponent"));
+        auto* param = call_object_getter(pawn, Identifiers::Fn_GetCharacterParameterComponent);
         if (!param) { say(out, STR("no param component")); return; }
 
         // STATE BEFORE this run (= did the previous run's assignment stick?).
-        auto* work = call_object_getter(param, STR("GetWork"));
-        const bool fixed = call_bool_getter(param, STR("IsAssignedFixed"));
+        auto* work = call_object_getter(param, Identifiers::Fn_GetWork);
+        const bool fixed = call_bool_getter(param, Identifiers::Fn_IsAssignedFixed);
         say(out, STR("{} | currentWork={} fixed={}"),
             pawn->GetName(), work ? work->GetName() : StringType(STR("(none)")), fixed);
 

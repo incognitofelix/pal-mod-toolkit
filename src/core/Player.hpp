@@ -5,6 +5,7 @@
 // multiplayer (where FindFirstOf would grab an arbitrary player).
 
 #include "Shared.hpp"
+#include "core/KnownIdentifiers.hpp"
 #include "core/Tool.hpp"
 
 #include <Unreal/AActor.hpp>
@@ -49,16 +50,16 @@ namespace PMT
         if (c)
         {
             // Controller -> possessed pawn (the character).
-            if (auto* pawn = pmt_call_object(c, STR("K2_GetPawn"))) { return static_cast<AActor*>(pawn); }
+            if (auto* pawn = pmt_call_object(c, Identifiers::Fn_K2GetPawn)) { return static_cast<AActor*>(pawn); }
             // The issuer is itself an actor (the character).
-            if (c->GetFunctionByNameInChain(STR("K2_GetActorLocation"))) { return static_cast<AActor*>(c); }
+            if (c->GetFunctionByNameInChain(Identifiers::Fn_K2GetActorLocation)) { return static_cast<AActor*>(c); }
             // A component -> its owner -> (pawn or actor).
-            if (auto* owner = pmt_call_object(c, STR("GetOwner")))
+            if (auto* owner = pmt_call_object(c, Identifiers::Fn_GetOwner))
             {
-                if (auto* pawn = pmt_call_object(owner, STR("K2_GetPawn"))) { return static_cast<AActor*>(pawn); }
-                if (owner->GetFunctionByNameInChain(STR("K2_GetActorLocation"))) { return static_cast<AActor*>(owner); }
+                if (auto* pawn = pmt_call_object(owner, Identifiers::Fn_K2GetPawn)) { return static_cast<AActor*>(pawn); }
+                if (owner->GetFunctionByNameInChain(Identifiers::Fn_K2GetActorLocation)) { return static_cast<AActor*>(owner); }
             }
         }
-        return static_cast<AActor*>(UObjectGlobals::FindFirstOf(STR("PalPlayerCharacter")));
+        return static_cast<AActor*>(UObjectGlobals::FindFirstOf(Identifiers::PalPlayerCharacter));
     }
 }

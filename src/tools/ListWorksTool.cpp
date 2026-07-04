@@ -1,6 +1,7 @@
 // Shared.hpp first: see the note in PlayerLocationTool.cpp.
 #include "Shared.hpp"
 #include "core/Console.hpp"
+#include "core/KnownIdentifiers.hpp"
 #include "core/Player.hpp"
 #include "tools/ListWorksTool.hpp"
 
@@ -66,16 +67,16 @@ namespace PMT
         const FVector pl = player->K2_GetActorLocation();
 
         std::vector<UObject*> works;
-        UObjectGlobals::FindAllOf(STR("PalWorkBase"), works);
+        UObjectGlobals::FindAllOf(Identifiers::PalWorkBase, works);
 
         constexpr double near_cm = 30000.0; // 300 m -> the base around the player
         int with_transform = 0, with_loc = 0, shown = 0;
 
         for (auto* w : works)
         {
-            auto* t = read_object_prop(w, STR("Transform"));
+            auto* t = read_object_prop(w, Identifiers::Prop_Transform);
             if (t) { ++with_transform; }
-            const FVector loc = t ? call_vector_getter(t, STR("K2_GetComponentLocation"))
+            const FVector loc = t ? call_vector_getter(t, Identifiers::Fn_K2GetComponentLocation)
                                   : FVector(0.0, 0.0, 0.0);
             const bool has_loc = loc.X() != 0.0 || loc.Y() != 0.0 || loc.Z() != 0.0;
             if (has_loc) { ++with_loc; }

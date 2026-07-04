@@ -1,6 +1,7 @@
 // Shared.hpp first: see the note in PlayerLocationTool.cpp.
 #include "Shared.hpp"
 #include "core/Console.hpp"
+#include "core/KnownIdentifiers.hpp"
 #include "core/Player.hpp"
 #include "tools/RaidTool.hpp"
 
@@ -25,15 +26,15 @@ namespace PMT
         // The base-camp model the player is standing in (PalBaseCampManager::GetNearestBaseCamp).
         auto get_player_base(const FVector& loc) -> UObject*
         {
-            auto* mgr = UObjectGlobals::FindFirstOf(STR("PalBaseCampManager"));
+            auto* mgr = UObjectGlobals::FindFirstOf(Identifiers::PalBaseCampManager);
             if (!mgr) { return nullptr; }
-            auto* fn = mgr->GetFunctionByNameInChain(STR("GetNearestBaseCamp"));
+            auto* fn = mgr->GetFunctionByNameInChain(Identifiers::Fn_GetNearestBaseCamp);
             if (!fn) { return nullptr; }
 
             std::vector<uint8_t> frame(static_cast<size_t>(fn->GetStructureSize()), 0);
             for (FProperty* p : fn->ForEachProperty())
             {
-                if (p->GetName() == STR("Location"))
+                if (p->GetName() == Identifiers::Param_Location)
                 {
                     std::memcpy(frame.data() + p->GetOffset_Internal(), &loc, sizeof(FVector));
                 }
@@ -52,12 +53,12 @@ namespace PMT
         // PalInvaderManager::RemoveInvaderIncident(Incident) -> clears an active incident.
         auto remove_incident(UObject* manager, UObject* incident) -> void
         {
-            auto* fn = manager->GetFunctionByNameInChain(STR("RemoveInvaderIncident"));
+            auto* fn = manager->GetFunctionByNameInChain(Identifiers::Fn_RemoveInvaderIncident);
             if (!fn) { return; }
             std::vector<uint8_t> frame(static_cast<size_t>(fn->GetStructureSize()), 0);
             for (FProperty* p : fn->ForEachProperty())
             {
-                if (p->GetName() == STR("Incident"))
+                if (p->GetName() == Identifiers::Param_Incident)
                 {
                     *reinterpret_cast<UObject**>(frame.data() + p->GetOffset_Internal()) = incident;
                 }
@@ -68,7 +69,7 @@ namespace PMT
         // PalInvaderManager::StartInvaderMarchAll() -- actually starts registered invaders.
         auto start_march(UObject* manager) -> bool
         {
-            auto* fn = manager->GetFunctionByNameInChain(STR("StartInvaderMarchAll"));
+            auto* fn = manager->GetFunctionByNameInChain(Identifiers::Fn_StartInvaderMarchAll);
             if (!fn) { return false; }
             manager->ProcessEvent(fn, nullptr);
             return true;
@@ -77,13 +78,13 @@ namespace PMT
         // PalInvaderManager::RequestIncidentInvaderEnemy_BP(base, Parameter=null) -> incident.
         auto request_raid(UObject* manager, UObject* base_camp) -> UObject*
         {
-            auto* fn = manager->GetFunctionByNameInChain(STR("RequestIncidentInvaderEnemy_BP"));
+            auto* fn = manager->GetFunctionByNameInChain(Identifiers::Fn_RequestIncidentInvaderEnemy);
             if (!fn) { return nullptr; }
 
             std::vector<uint8_t> frame(static_cast<size_t>(fn->GetStructureSize()), 0);
             for (FProperty* p : fn->ForEachProperty())
             {
-                if (p->GetName() == STR("OccuredBaseCamp"))
+                if (p->GetName() == Identifiers::Param_OccuredBaseCamp)
                 {
                     *reinterpret_cast<UObject**>(frame.data() + p->GetOffset_Internal()) = base_camp;
                 }
@@ -111,7 +112,7 @@ namespace PMT
 
     auto RaidTool::execute(const std::vector<StringType>& args, Out& out) -> void
     {
-        auto* manager = UObjectGlobals::FindFirstOf(STR("PalInvaderManager"));
+        auto* manager = UObjectGlobals::FindFirstOf(Identifiers::PalInvaderManager);
         if (!manager) { say(out, STR("no PalInvaderManager found")); return; }
 
         // "pmt raid clear" -> remove the incident we last created (frees a new request).

@@ -1,6 +1,7 @@
 // Shared.hpp first: see the note in PlayerLocationTool.cpp.
 #include "Shared.hpp"
 #include "core/Console.hpp"
+#include "core/KnownIdentifiers.hpp"
 #include "tools/BaseActionTestTool.hpp"
 
 #include <Unreal/UFunction.hpp>
@@ -22,7 +23,7 @@ namespace PMT
     {
         // Every worker Pal in a base is driven by a BP_MonsterAIController_BaseCamp_C.
         std::vector<UObject*> controllers;
-        UObjectGlobals::FindAllOf(STR("BP_MonsterAIController_BaseCamp_C"), controllers);
+        UObjectGlobals::FindAllOf(Identifiers::BP_MonsterAIController_BaseCamp, controllers);
         if (controllers.empty()) { say(out, STR("no base-camp controllers found")); return; }
 
         // SetDefaultPositionAction() is parameterless -> ProcessEvent with no parm buffer.
@@ -30,7 +31,7 @@ namespace PMT
         int called = 0;
         for (auto* ctrl : controllers)
         {
-            auto* fn = ctrl->GetFunctionByNameInChain(STR("SetDefaultPositionAction"));
+            auto* fn = ctrl->GetFunctionByNameInChain(Identifiers::Fn_SetDefaultPositionAction);
             if (!fn) { continue; }
             ctrl->ProcessEvent(fn, nullptr);
             ++called;

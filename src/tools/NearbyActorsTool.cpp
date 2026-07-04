@@ -1,6 +1,7 @@
 // Shared.hpp first: see the note in PlayerLocationTool.cpp.
 #include "Shared.hpp"
 #include "core/Console.hpp"
+#include "core/KnownIdentifiers.hpp"
 #include "core/Player.hpp"
 #include "tools/NearbyActorsTool.hpp"
 
@@ -33,7 +34,7 @@ namespace PMT
         const FVector origin = player->K2_GetActorLocation();
 
         std::vector<UObject*> actors;
-        UObjectGlobals::FindAllOf(STR("Actor"), actors);
+        UObjectGlobals::FindAllOf(Identifiers::Actor, actors);
 
         const double radius_sq = radius_cm * radius_cm;
         int n = 0;
